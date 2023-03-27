@@ -52,7 +52,6 @@ import 'package:js/js.dart';
 
 import 'api/cferrorresponse/cferrorresponse.dart';
 
-
 external Cashfree get cashfree;
 
 @JS()
@@ -72,7 +71,13 @@ class CFConfig {
   external Function(dynamic) get onSuccess;
   external Function(dynamic) get onFailure;
 
-  external factory CFConfig({List<String> components, String orderToken, String pluginName, Map<String, String> style, Function onSuccess, Function onFailure});
+  external factory CFConfig(
+      {List<String> components,
+      String orderToken,
+      String pluginName,
+      Map<String, String> style,
+      Function onSuccess,
+      Function onFailure});
 }
 
 /// A web implementation of the FlutterCashfreePgSdkPlatform of the FlutterCashfreePgSdk plugin.
@@ -115,17 +120,17 @@ class FlutterCashfreePgSdkWeb {
       default:
         throw PlatformException(
           code: 'Unimplemented',
-          details: 'flutter_cashfree_pg_sdk for web doesn\'t implement \'${call.method}\'',
+          details:
+              'flutter_cashfree_pg_sdk for web doesn\'t implement \'${call.method}\'',
         );
     }
   }
-
 
   void onSuccess(String data) {
     var jsonObject = json.decode(data) as Map<String, dynamic>;
     var order = jsonObject["order"];
     var orderId = order["orderId"] as String;
-    if(_verifyPayment != null) {
+    if (_verifyPayment != null) {
       _verifyPayment!(orderId);
       _outerDiv?.remove();
     }
@@ -137,17 +142,20 @@ class FlutterCashfreePgSdkWeb {
     var orderId = order["orderId"] as dynamic ?? "";
     var message = order["errorText"] as String? ?? "";
     var transaction = jsonObject["transaction"] as dynamic;
-    if(transaction != null) {
-      message = transaction["txMsg"] as String ?? "";
-      if(_onError != null) {
-        var errorResponse = CFErrorResponse("FAILED", message, "invalid_request", "invalid request");
+    if (transaction != null) {
+      message = transaction["txMsg"] as String? ?? "";
+      if (_onError != null) {
+        var errorResponse = CFErrorResponse(
+            "FAILED", message, "invalid_request", "invalid request");
         _onError!(errorResponse, orderId);
         _outerDiv?.remove();
       }
     } else {
-      if((message.toLowerCase() == "order is no longer active") || (message.toLowerCase() == "token is not present")) {
-        if(_onError != null) {
-          var errorResponse = CFErrorResponse("FAILED", message, "invalid_request", "invalid request");
+      if ((message.toLowerCase() == "order is no longer active") ||
+          (message.toLowerCase() == "token is not present")) {
+        if (_onError != null) {
+          var errorResponse = CFErrorResponse(
+              "FAILED", message, "invalid_request", "invalid request");
           _onError!(errorResponse, orderId.toString());
           _outerDiv?.remove();
         }
@@ -158,7 +166,6 @@ class FlutterCashfreePgSdkWeb {
   }
 
   void _showToast(String message) {
-
     DivElement toast = DivElement();
     toast.text = message;
     toast.style.visibility = "visible";
@@ -184,9 +191,11 @@ class FlutterCashfreePgSdkWeb {
   }
 
   void _userCancelledTransaction() {
-    if(_onError != null) {
+    if (_onError != null) {
       var errorResponse = CFErrorResponse(
-          "FAILED", "Transaction cancelled by user", "invalid_request",
+          "FAILED",
+          "Transaction cancelled by user",
+          "invalid_request",
           "invalid request");
       _onError!(errorResponse, _order_id ?? "order_id_not_found");
       _outerDiv?.remove();
@@ -204,12 +213,11 @@ class FlutterCashfreePgSdkWeb {
     String paymentSessionId = session["payment_session_id"] as String;
 
     var script = document.createElement("SCRIPT") as ScriptElement;
-    if(environment == "SANDBOX") {
+    if (environment == "SANDBOX") {
       script.src =
-      "https://sdk.cashfree.com/js/flutter/2.0.0/cashfree.sandbox.js ";
+          "https://sdk.cashfree.com/js/flutter/2.0.0/cashfree.sandbox.js ";
     } else {
-      script.src =
-      "https://sdk.cashfree.com/js/flutter/2.0.0/cashfree.prod.js";
+      script.src = "https://sdk.cashfree.com/js/flutter/2.0.0/cashfree.prod.js";
     }
     script.onLoad.first.then((value) {
       var c = Cashfree(paymentSessionId);
@@ -230,7 +238,6 @@ class FlutterCashfreePgSdkWeb {
     var session = arguments["session"] as dynamic;
     var orderId = session["order_id"] as String;
     _order_id = orderId;
-
 
     /// Adding this outer div for opaque background
     DivElement outerDiv = DivElement();
@@ -270,10 +277,7 @@ class FlutterCashfreePgSdkWeb {
       _userCancelledTransaction();
     });
 
-    document
-        .querySelector("body")
-        ?.children
-        .add(outerDiv);
+    document.querySelector("body")?.children.add(outerDiv);
 
     /// Taking an instance of outer div to close it later
     _outerDiv = outerDiv;
@@ -288,10 +292,10 @@ class FlutterCashfreePgSdkWeb {
     var components = paymentComponents["components"] as List<dynamic>;
     List<String> componentsToSend = [];
     componentsToSend.add("order-details");
-    for(int i = 0; i < components.length; i++) {
-      if(components[i] == "wallet") {
+    for (int i = 0; i < components.length; i++) {
+      if (components[i] == "wallet") {
         componentsToSend.add("app");
-      } else if(components[i] == "emi") {
+      } else if (components[i] == "emi") {
         componentsToSend.add("creditcardemi");
         componentsToSend.add("cardlessemi");
       } else {
@@ -302,7 +306,7 @@ class FlutterCashfreePgSdkWeb {
     var theme = arguments["theme"] as dynamic;
     String backgroundColor = theme["navigationBarBackgroundColor"] as String;
     String color = theme["navigationBarTextColor"] as String;
-    String font = theme ["primaryFont"] as String;
+    String font = theme["primaryFont"] as String;
 
     var style = {
       "backgroundColor": backgroundColor,
@@ -314,24 +318,28 @@ class FlutterCashfreePgSdkWeb {
     };
 
     var script = document.createElement("SCRIPT") as ScriptElement;
-    if(environment == "SANDBOX") {
+    if (environment == "SANDBOX") {
       script.src =
-      "https://sdk.cashfree.com/js/flutter/2.0.0/cashfree.sandbox.js ";
+          "https://sdk.cashfree.com/js/flutter/2.0.0/cashfree.sandbox.js ";
     } else {
-      script.src =
-      "https://sdk.cashfree.com/js/flutter/2.0.0/cashfree.prod.js";
+      script.src = "https://sdk.cashfree.com/js/flutter/2.0.0/cashfree.prod.js";
     }
     script.onLoad.first.then((value) {
       var c = Cashfree(paymentSessionId);
 
-      var element = document.getElementById("cf-flutter-placeholder") as Element;
+      var element =
+          document.getElementById("cf-flutter-placeholder") as Element;
       var os = allowInterop(onSuccess);
       var of = allowInterop(onFailure);
 
-      var cfConfig = CFConfig(components: componentsToSend, pluginName: "jflt-d-2.0.3-3.3.10", onFailure: of, onSuccess: os, style: style);
+      var cfConfig = CFConfig(
+          components: componentsToSend,
+          pluginName: "jflt-d-2.0.3-3.3.10",
+          onFailure: of,
+          onSuccess: os,
+          style: style);
       c.drop(element, cfConfig);
     });
     document.querySelector("body")?.children.add(script);
   }
-
 }
